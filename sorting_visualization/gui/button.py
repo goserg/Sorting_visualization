@@ -1,6 +1,11 @@
-from enum import Enum, auto
+from typing import Tuple, Callable, Any
 
-from window_controller import *
+import pygame
+
+from window_controller import screen
+from gui.color_hepler import *
+from gui.button_fsm import States
+from gui.button_abc import ButtonABC
 
 
 def text_objects(text, font):
@@ -8,20 +13,20 @@ def text_objects(text, font):
     return text_surface, text_surface.get_rect()
 
 
-class Button:
-    class States(Enum):
-        HOVER = auto()
-        PRESSED = auto()
-        FOCUSED = auto()
-        NORMAL = auto()
-
-    def __init__(self, text, pos, width, height, action, args=None):
+class Button(ButtonABC):
+    def __init__(self,
+                 text: str,
+                 pos: Tuple[int, int],
+                 width: int,
+                 height: int,
+                 action: Callable,
+                 args: Any = None,
+                 ) -> None:
+        super().__init__()
         self.text = text
         self.pos = int(pos[0]), int(pos[1])
         self.height = int(height)
         self.width = int(width)
-        self.color = None
-        self.state = self.States.NORMAL
         self.action = action
         self.args = args
         self.update_color()
@@ -43,17 +48,9 @@ class Button:
                 else:
                     self.action()
             if mouse_pressed[0]:
-                self.state = self.States.PRESSED
+                self.state = States.PRESSED
             else:
-                self.state = self.States.HOVER
+                self.state = States.HOVER
         else:
-            self.state = self.States.NORMAL
+            self.state = States.NORMAL
         self.update_color()
-
-    def update_color(self):
-        if self.state == self.States.NORMAL:
-            self.color = color_white
-        elif self.state == self.States.PRESSED:
-            self.color = color_red
-        elif self.state == self.States.HOVER:
-            self.color = color_gray

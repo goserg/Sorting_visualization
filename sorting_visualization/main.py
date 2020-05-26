@@ -4,19 +4,23 @@ import sys
 import random
 import colorsys
 
+import pygame
+
 from sorters.bubble_sorter import BubbleSorter
 from sorters.gnome_sorter import GnomeSorter
 from sorters.shaker_sorter import ShakerSorter
 from sorters.selection_sorter import SelectionSorter
 from sorters.insertion_sorter import InsertionSorter
-from button import Button
-from window_controller import *
+from gui.button import Button
+from gui.switch_button import SwitchButton
+from window_controller import screen, SCR_W, SCR_H
 from box import Box
 
 SPEED = 10
 DELAY = 0.5
-SORTERS = BubbleSorter, GnomeSorter, ShakerSorter, SelectionSorter, InsertionSorter
+SORTERS = [BubbleSorter, GnomeSorter, ShakerSorter, SelectionSorter, InsertionSorter]
 b = None
+
 
 def get_color(n):
     return colorsys.hsv_to_rgb(n, 1, 255)
@@ -39,6 +43,7 @@ def shuffle():
                 get_color(lst.index(item) / n + 0.9),
                 ))
     b = b or iter(BubbleSorter(boxes))
+
 
 n = 50
 shuffle()
@@ -71,36 +76,25 @@ def update(mouse, click):
             except StopIteration:
                 running = False
 
-    for btn in sorter_buttons:
-        btn.update(mouse, click)
     set_50_btn.update(mouse, click)
     set_100_btn.update(mouse, click)
     set_200_btn.update(mouse, click)
+
+    sorter_buttons.update(mouse, click)
 
 
 def draw():
     screen.fill((0, 0, 0))
     for i in boxes:
         i.draw()
-    for btn in sorter_buttons:
-        btn.draw()
+
     set_50_btn.draw()
     set_100_btn.draw()
     set_200_btn.draw()
 
+    sorter_buttons.draw()
+
     pygame.display.update()
-
-
-sorter_buttons = []
-for i, sorter in enumerate(SORTERS):
-    sorter_buttons.append(Button(
-        sorter.name,
-        (10+i*90, SCR_H * 0.92),
-        80,
-        SCR_H * 0.06,
-        action=set_sorter,
-        args=sorter
-    ))
 
 
 set_50_btn = Button(
@@ -128,6 +122,15 @@ set_200_btn = Button(
     SCR_H * 0.06,
     action=set_n,
     args=200,
+)
+
+sorter_buttons = SwitchButton(
+    pos=(50, SCR_H * 0.92),
+    width=80,
+    height=SCR_H * 0.06,
+    action=set_sorter,
+    args=SORTERS,
+    initial_arg=BubbleSorter
 )
 
 while True:
